@@ -59,6 +59,9 @@
             margin-bottom: 10px;
         }
     </style>
+    <!-- Incluye el SDK de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js"></script>
 </head>
 <body>
     <div id="voting-container">
@@ -86,54 +89,59 @@
     </div>
 
     <script>
+        // Configura Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0dCD_ENsaGywY9GU-0y2rOC3NDlkQ3Ro",
+            authDomain: "api-testin-fgg.firebaseapp.com",
+            projectId: "api-testin-fgg",
+            storageBucket: "api-testin-fgg.appspot.com",
+            messagingSenderId: "238085859086",
+            appId: "1:238085859086:web:b00d98b4d6ce705104d95f",
+            measurementId: "G-214BJPKM6M"
+        };
+
+        // Inicializa Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         document.addEventListener('DOMContentLoaded', function () {
-            // Función para obtener votos desde localStorage
-            function getVotes() {
-                return JSON.parse(localStorage.getItem('votes')) || {};
-            }
-
-            // Función para obtener nombres de votantes desde localStorage
-            function getNames() {
-                return JSON.parse(localStorage.getItem('names')) || [];
-            }
-
-            // Función para almacenar votos en localStorage
-            function storeVote(country, name) {
-                let votes = getVotes();
-                let names = getNames();
-
-                if (!votes[country]) {
-                    votes[country] = 0;
-                }
-                votes[country]++;
+            // Función para votar
+            async function vote(country, name) {
+                const voteRef = db.collection('votes').doc(country);
+                await db.runTransaction(async (transaction) => {
+                    const voteDoc = await transaction.get(voteRef);
+                    if (!voteDoc.exists) {
+                        transaction.set(voteRef, { count: 1 });
+                    } else {
+                        transaction.update(voteRef, { count: voteDoc.data().count + 1 });
+                    }
+                });
 
                 if (name) {
-                    names.push(name);
+                    await db.collection('names').add({ name: name });
                 }
 
-                localStorage.setItem('votes', JSON.stringify(votes));
-                localStorage.setItem('names', JSON.stringify(names));
+                updateResults();
             }
 
             // Función para actualizar los resultados
-            function updateResults() {
-                const votes = getVotes();
-                const names = getNames();
-                let resultsList = document.getElementById("results");
-                resultsList.innerHTML = "";
-                for (let country in votes) {
-                    resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase().substring(0, 2)}.svg" class="flag-icon"> ${country}: ${votes[country]} votos</li>`;
-                }
-                for (let name of names) {
-                    resultsList.innerHTML += `<li>Hola ${name}!</li>`;
-                }
-            }
+            async function updateResults() {
+                const votesSnapshot = await db.collection('votes').get();
+                const namesSnapshot = await db.collection('names').get();
+                const resultsList = document.getElementById("results");
 
-            // Función para manejar el voto
-            function vote(country) {
-                const name = document.getElementById('voter-name').value;
-                storeVote(country, name);
-                updateResults();
+                resultsList.innerHTML = ""; // Limpiar la lista de resultados
+
+                votesSnapshot.forEach((doc) => {
+                    const country = doc.id;
+                    const count = doc.data().count;
+                    resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase().substring(0, 2)}.svg" class="flag-icon"> ${country}: ${count} votos</li>`;
+                });
+
+                namesSnapshot.forEach((doc) => {
+                    const name = doc.data().name;
+                    resultsList.innerHTML += `<li>Hola ${name}!</li>`;
+                });
             }
 
             // Agregar evento a los botones
@@ -141,7 +149,8 @@
             buttons.forEach(button => {
                 button.addEventListener("click", function () {
                     const country = this.getAttribute("data-country");
-                    vote(country);
+                    const name = document.getElementById('voter-name').value;
+                    vote(country, name);
                 });
             });
 
