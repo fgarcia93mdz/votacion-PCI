@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación en Vivo</title>
+    <style>
+        #voting-container {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .flag-icon {
+            width: 30px;
+            height: auto;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+        }
+
+        #results {
+            list-style-type: none;
+            padding: 0;
+            font-size: 18px;
+        }
+
+        #results li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="voting-container">
+        <h2>Votación en Vivo</h2>
+        <div class="button-container">
+            <button data-country="Argentina">
+                <img src="https://flagicons.lipis.dev/flags/4x3/ar.svg" alt="Argentina" class="flag-icon" loading="lazy"> Argentina
+            </button>
+            <button data-country="Brasil">
+                <img src="https://flagicons.lipis.dev/flags/4x3/br.svg" alt="Brasil" class="flag-icon" loading="lazy"> Brasil
+            </button>
+            <button data-country="Chile">
+                <img src="https://flagicons.lipis.dev/flags/4x3/cl.svg" alt="Chile" class="flag-icon" loading="lazy"> Chile
+            </button>
+            <button data-country="México">
+                <img src="https://flagicons.lipis.dev/flags/4x3/mx.svg" alt="México" class="flag-icon" loading="lazy"> México
+            </button>
+            <button data-country="Colombia">
+                <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
+            </button>
+        </div>
+        <h3>Resultados:</h3>
+        <ul id="results"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const apiUrl = "https://script.google.com/macros/s/AKfycbzw9fJ7Mj02g0Yakq3finaXYa2UY856xMjMXQ6iUjUMTNOEP88VBfcyjCruRZkAq3EV/exec";
+
+            // Función para votar
+            async function vote(country) {
+                await fetch(apiUrl, {
+                    method: "POST",
+                    body: JSON.stringify({ country: country }),
+                    headers: { "Content-Type": "application/json" }
+                });
+                updateResults();
+            }
+
+            // Función para actualizar los resultados
+            async function updateResults() {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                let resultsList = document.getElementById("results");
+                resultsList.innerHTML = "";
+                for (let country in data) {
+                    resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase().substring(0, 2)}.svg" class="flag-icon"> ${country}: ${data[country]} votos</li>`;
+                }
+            }
+
+            // Agregar evento a los botones
+            const buttons = document.querySelectorAll("button[data-country]");
+            buttons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const country = this.getAttribute("data-country");
+                    vote(country);
+                });
+            });
+
+            // Actualizar cada 5 segundos
+            setInterval(updateResults, 5000);
+            updateResults();
+        });
+    </script>
+</body>
+</html>
