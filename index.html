@@ -111,7 +111,7 @@
                 await db.runTransaction(async (transaction) => {
                     const voteDoc = await transaction.get(voteRef);
                     if (!voteDoc.exists) {
-                        transaction.set(voteRef, { count: 1 });
+                        transaction.set(voteRef, { count: 1, country: country });
                     } else {
                         transaction.update(voteRef, { count: voteDoc.data().count + 1 });
                     }
