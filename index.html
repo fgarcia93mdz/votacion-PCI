@@ -53,28 +53,6 @@
             color: #333;
         }
 
-        h3 {
-            font-size: 1.8em;
-            margin-top: 20px;
-        }
-
-        #results {
-            list-style-type: none;
-            padding: 0;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-        #results li {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
         #greeting {
             font-size: 1.2em;
             margin-top: 20px;
@@ -119,19 +97,13 @@
                 <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
             </button>
         </div>
-        <br/>
-        <br/>
         <div id="greeting">¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
-        <br/>
-        <br/>
-        <h3>Resultados:</h3>
-        <ul id="results"></ul>
     </div>
 
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -149,8 +121,6 @@
         const db = getFirestore(app);
 
         document.addEventListener('DOMContentLoaded', function () {
-            let voterName = '';
-
             // Función para votar
             async function vote(country, name) {
                 const voteRef = doc(db, 'votes', country);
@@ -175,24 +145,6 @@
                 setTimeout(() => {
                     greetingElement.style.display = 'none';
                 }, 3000);
-
-                updateResults();
-            }
-
-            // Función para actualizar los resultados
-            async function updateResults() {
-                const votesCol = collection(db, 'votes');
-                const resultsList = document.getElementById("results");
-
-                onSnapshot(votesCol, (snapshot) => {
-                    resultsList.innerHTML = ""; // Limpiar la lista de resultados
-                    snapshot.forEach((doc) => {
-                        const country = doc.id.toLowerCase();
-                        const count = doc.data().count;
-                        const flagUrl = `https://flagicons.lipis.dev/flags/4x3/${country.slice(0, 2)}.svg`;
-                        resultsList.innerHTML += `<li><img src="${flagUrl}" class="flag-icon" alt="${country}"> ${doc.id}: ${count} votos</li>`;
-                    });
-                });
             }
 
             // Función para actualizar el saludo
@@ -215,8 +167,6 @@
                     vote(country, name);
                 });
             });
-
-            updateResults();
         });
     </script>
 </body>
