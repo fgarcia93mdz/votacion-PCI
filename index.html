@@ -13,12 +13,13 @@
             border-radius: 10px;
             max-width: 500px;
             margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
@@ -34,6 +35,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -65,18 +67,33 @@
 
         #results li {
             margin-bottom: 10px;
-            padding: 5px;
+            padding: 10px;
             background-color: #e9ecef;
             border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         #greeting {
             font-size: 1.2em;
             margin-top: 20px;
+            color: #007bff;
+            display: none;
         }
 
         .button-container button {
             width: 120px;
+        }
+
+        #voter-name {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            width: calc(100% - 24px);
+            box-sizing: border-box;
+            margin-bottom: 20px;
         }
 
     </style>
@@ -102,7 +119,7 @@
                 <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
             </button>
         </div>
-        <div id="greeting"></div>
+        <div id="greeting">¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
         <h3>Resultados:</h3>
         <ul id="results"></ul>
     </div>
@@ -140,11 +157,20 @@
                     await updateDoc(voteRef, { count: voteDoc.data().count + 1 });
                 }
 
-                if (name) {
+                const greetingElement = document.getElementById('greeting');
+                if (name.trim() !== '') {
                     await addDoc(collection(db, 'names'), { name: name });
+                    greetingElement.innerText = `¡Hola ${name}! Gracias por votar por ${country}.`;
                 } else {
-                    await addDoc(collection(db, 'names'), { name: 'Acá presente ' + country });
+                    const defaultName = 'Acá presente ' + country;
+                    await addDoc(collection(db, 'names'), { name: defaultName });
+                    greetingElement.innerText = `¡Hola! Acá presente de ${country}, gracias por votar.`;
                 }
+
+                greetingElement.style.display = 'block';
+                setTimeout(() => {
+                    greetingElement.style.display = 'none';
+                }, 3000);
 
                 updateResults();
             }
@@ -173,12 +199,13 @@
             }
 
             // Función para actualizar el saludo
-            function updateGreeting() {
+            window.updateGreeting = function() {
                 const nameInput = document.getElementById('voter-name').value;
+                const greetingElement = document.getElementById('greeting');
                 if (nameInput.trim() !== '') {
-                    document.getElementById('greeting').innerText = `¡Hola ${nameInput}! Gracias por votar.`;
+                    greetingElement.innerText = `¡Hola ${nameInput}! Gracias por votar.`;
                 } else {
-                    document.getElementById('greeting').innerText = `¡Hola! Acá presente de tu país, por favor ingresa tu nombre.`;
+                    greetingElement.innerText = `¡Hola! Acá presente de tu país, por favor ingresa tu nombre.`;
                 }
             }
 
