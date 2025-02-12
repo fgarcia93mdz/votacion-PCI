@@ -178,7 +178,6 @@
             // Función para actualizar los resultados
             async function updateResults() {
                 const votesCol = collection(db, 'votes');
-                const namesCol = collection(db, 'names');
                 const resultsList = document.getElementById("results");
 
                 onSnapshot(votesCol, (snapshot) => {
@@ -187,13 +186,6 @@
                         const country = doc.id;
                         const count = doc.data().count;
                         resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase().substring(0, 2)}.svg" class="flag-icon"> ${country}: ${count} votos</li>`;
-                    });
-                });
-
-                onSnapshot(namesCol, (snapshot) => {
-                    snapshot.forEach((doc) => {
-                        const name = doc.data().name;
-                        resultsList.innerHTML += `<li>Hola ${name}!</li>`;
                     });
                 });
             }
