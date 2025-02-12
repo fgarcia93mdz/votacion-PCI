@@ -119,11 +119,11 @@
                 <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
             </button>
         </div>
+        <br/>
+        <br/>
         <div id="greeting">¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
         <br/>
         <br/>
-        <h3>Resultados:</h3>
-        <ul id="results"></ul>
     </div>
 
     <script type="module">
@@ -185,9 +185,10 @@
                 onSnapshot(votesCol, (snapshot) => {
                     resultsList.innerHTML = ""; // Limpiar la lista de resultados
                     snapshot.forEach((doc) => {
-                        const country = doc.id;
+                        const country = doc.id.toLowerCase();
                         const count = doc.data().count;
-                        resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase()}.svg" class="flag-icon"> ${country}: ${count} votos</li>`;
+                        const flagUrl = `https://flagicons.lipis.dev/flags/4x3/${country.substring(0, 2)}.svg`;
+                        resultsList.innerHTML += `<li><img src="${flagUrl}" class="flag-icon" alt="${country}"> ${doc.id}: ${count} votos</li>`;
                     });
                 });
             }
