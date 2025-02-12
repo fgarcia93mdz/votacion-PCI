@@ -5,15 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votación en Vivo</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f7;
+        }
+
         #voting-container {
-            font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
             border-radius: 10px;
-            max-width: 500px;
+            max-width: 100%;
             margin: 20px auto;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            position: relative;
+            display: inline-block;
+            animation: slide-in 1s ease-out;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .button-container {
@@ -22,6 +50,7 @@
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            padding: 0 10px;
         }
 
         button {
@@ -29,28 +58,25 @@
             color: white;
             border: none;
             padding: 10px 15px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             border-radius: 5px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            transition: background-color 0.3s;
+            gap: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: 120px;
+            justify-content: center;
         }
 
         button:hover {
             background-color: #0056b3;
+            transform: translateY(-5px);
         }
 
         .flag-icon {
-            width: 30px;
+            width: 20px;
             height: auto;
-        }
-
-        h2 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            color: #333;
         }
 
         #greeting {
@@ -58,15 +84,22 @@
             margin-top: 20px;
             color: #007bff;
             display: none;
+            animation: fade-in 1s ease-out;
+            padding: 0 10px;
         }
 
-        .button-container button {
-            width: 120px;
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         #voter-name {
             padding: 10px;
-            font-size: 16px;
+            font-size: 14px;
             border: 2px solid #007bff;
             border-radius: 5px;
             width: calc(100% - 24px);
@@ -74,12 +107,35 @@
             margin-bottom: 20px;
         }
 
+        @media (min-width: 768px) {
+            h2 {
+                font-size: 2.5em;
+            }
+
+            button {
+                font-size: 16px;
+                width: 150px;
+            }
+
+            .flag-icon {
+                width: 30px;
+            }
+
+            #greeting {
+                font-size: 1.5em;
+            }
+
+            #voter-name {
+                font-size: 16px;
+            }
+        }
+
     </style>
 </head>
 <body>
     <div id="voting-container">
-        <h2>¡Bienvenidos a la Votación en Vivo!</h2>
-        <input type="text" id="voter-name" placeholder="Ingresa tu nombre" oninput="updateGreeting()">
+        <h2>🎉 ¡Bienvenidos a la Votación en Vivo! 🎉</h2>
+        <input type="text" id="voter-name" placeholder="Ingresa tu nombre" oninput="updateName()">
         <div class="button-container">
             <button data-country="Argentina">
                 <img src="https://flagicons.lipis.dev/flags/4x3/ar.svg" alt="Argentina" class="flag-icon" loading="lazy"> Argentina
@@ -97,7 +153,7 @@
                 <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
             </button>
         </div>
-        <div id="greeting">¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
+        <div id="greeting">👋 ¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
     </div>
 
     <script type="module">
@@ -107,7 +163,7 @@
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyA0dCD_ENsaGywY9GU-0y2rOC3NDlkQ3Ro",
+            apiKey: "AIzaSyA0dCD_ENsaGyW9GU-0y2rOC3NDlkQ3Ro",
             authDomain: "api-testin-fgg.firebaseapp.com",
             projectId: "api-testin-fgg",
             storageBucket: "api-testin-fgg.appspot.com",
@@ -120,52 +176,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Función para votar
-            async function vote(country, name) {
-                const voteRef = doc(db, 'votes', country);
-                const voteDoc = await getDoc(voteRef);
-                if (!voteDoc.exists()) {
-                    await setDoc(voteRef, { count: 1, country: country });
-                } else {
-                    await updateDoc(voteRef, { count: voteDoc.data().count + 1 });
-                }
+        let voterName = '';
 
-                const greetingElement = document.getElementById('greeting');
-                if (name.trim() !== '') {
-                    await addDoc(collection(db, 'names'), { name: name });
-                    greetingElement.innerText = `¡Hola ${name}! Gracias por votar por ${country}.`;
-                } else {
-                    const defaultName = 'Acá presente ' + country;
-                    await addDoc(collection(db, 'names'), { name: defaultName });
-                    greetingElement.innerText = `¡Hola! Acá presente de ${country}, gracias por votar.`;
-                }
+        // Función para actualizar el nombre mientras se escribe
+        window.updateName = function() {
+            voterName = document.getElementById('voter-name').value;
+        }
 
-                greetingElement.style.display = 'block';
-                setTimeout(() => {
-                    greetingElement.style.display = 'none';
-                }, 3000);
+        // Función para votar
+        async function vote(country) {
+            const voteRef = doc(db, 'votes', country);
+            const voteDoc = await getDoc(voteRef);
+            if (!voteDoc.exists()) {
+                await setDoc(voteRef, { count: 1, country: country });
+            } else {
+                await updateDoc(voteRef, { count: voteDoc.data().count + 1 });
             }
 
-            // Función para actualizar el saludo
-            window.updateGreeting = function() {
-                const nameInput = document.getElementById('voter-name').value;
-                const greetingElement = document.getElementById('greeting');
-                if (nameInput.trim() !== '') {
-                    greetingElement.innerText = `¡Hola ${nameInput}! Gracias por votar.`;
-                } else {
-                    greetingElement.innerText = `¡Hola! Acá presente de tu país, por favor ingresa tu nombre.`;
-                }
+            const greetingElement = document.getElementById('greeting');
+            if (voterName.trim() !== '') {
+                await addDoc(collection(db, 'names'), { name: voterName });
+                greetingElement.innerText = `👋 ¡Hola ${voterName}! Gracias por votar por ${country}.`;
+            } else {
+                const defaultName = 'Acá presente ' + country;
+                await addDoc(collection(db, 'names'), { name: defaultName });
+                greetingElement.innerText = `👋 ¡Hola! Acá presente de ${country}, gracias por votar.`;
             }
 
-            // Agregar evento a los botones
-            const buttons = document.querySelectorAll("button[data-country]");
-            buttons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const country = this.getAttribute("data-country");
-                    const name = document.getElementById('voter-name').value;
-                    vote(country, name);
-                });
+            greetingElement.style.display = 'block';
+            setTimeout(() => {
+                greetingElement.style.display = 'none';
+            }, 5000); // Mostrar el mensaje durante 5 segundos
+        }
+
+        // Agregar evento a los botones
+        const buttons = document.querySelectorAll("button[data-country]");
+        buttons.forEach(button => {
+            button.addEventListener("click", function () {
+                const country = this.getAttribute("data-country");
+                vote(country);
             });
         });
     </script>
