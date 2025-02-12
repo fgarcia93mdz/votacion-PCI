@@ -185,7 +185,7 @@
                     snapshot.forEach((doc) => {
                         const country = doc.id;
                         const count = doc.data().count;
-                        resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase().substring(0, 2)}.svg" class="flag-icon"> ${country}: ${count} votos</li>`;
+                        resultsList.innerHTML += `<li><img src="https://flagicons.lipis.dev/flags/4x3/${country.toLowerCase()}.svg" class="flag-icon"> ${country}: ${count} votos</li>`;
                     });
                 });
             }
