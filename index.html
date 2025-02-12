@@ -124,6 +124,8 @@
         <div id="greeting">¡Hola! Acá presente de tu país, por favor ingresa tu nombre.</div>
         <br/>
         <br/>
+        <h3>Resultados:</h3>
+        <ul id="results"></ul>
     </div>
 
     <script type="module">
@@ -187,7 +189,7 @@
                     snapshot.forEach((doc) => {
                         const country = doc.id.toLowerCase();
                         const count = doc.data().count;
-                        const flagUrl = `https://flagicons.lipis.dev/flags/4x3/${country.substring(0, 2)}.svg`;
+                        const flagUrl = `https://flagicons.lipis.dev/flags/4x3/${country.slice(0, 2)}.svg`;
                         resultsList.innerHTML += `<li><img src="${flagUrl}" class="flag-icon" alt="${country}"> ${doc.id}: ${count} votos</li>`;
                     });
                 });
