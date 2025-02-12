@@ -9,6 +9,10 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 20px auto;
         }
 
         .button-container {
@@ -16,6 +20,7 @@
             justify-content: center;
             gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -41,29 +46,45 @@
         }
 
         h2 {
-            font-size: 2em;
+            font-size: 2.5em;
             margin-bottom: 20px;
+            color: #333;
         }
 
         h3 {
-            font-size: 1.5em;
+            font-size: 1.8em;
+            margin-top: 20px;
         }
 
         #results {
             list-style-type: none;
             padding: 0;
             font-size: 18px;
+            margin-top: 20px;
         }
 
         #results li {
             margin-bottom: 10px;
+            padding: 5px;
+            background-color: #e9ecef;
+            border-radius: 5px;
         }
+
+        #greeting {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            width: 120px;
+        }
+
     </style>
 </head>
 <body>
     <div id="voting-container">
-        <h2>Votación en Vivo</h2>
-        <input type="text" id="voter-name" placeholder="Ingresa tu nombre">
+        <h2>¡Bienvenidos a la Votación en Vivo!</h2>
+        <input type="text" id="voter-name" placeholder="Ingresa tu nombre" oninput="updateGreeting()">
         <div class="button-container">
             <button data-country="Argentina">
                 <img src="https://flagicons.lipis.dev/flags/4x3/ar.svg" alt="Argentina" class="flag-icon" loading="lazy"> Argentina
@@ -81,6 +102,7 @@
                 <img src="https://flagicons.lipis.dev/flags/4x3/co.svg" alt="Colombia" class="flag-icon" loading="lazy"> Colombia
             </button>
         </div>
+        <div id="greeting"></div>
         <h3>Resultados:</h3>
         <ul id="results"></ul>
     </div>
@@ -106,6 +128,8 @@
         const db = getFirestore(app);
 
         document.addEventListener('DOMContentLoaded', function () {
+            let voterName = '';
+
             // Función para votar
             async function vote(country, name) {
                 const voteRef = doc(db, 'votes', country);
@@ -118,6 +142,8 @@
 
                 if (name) {
                     await addDoc(collection(db, 'names'), { name: name });
+                } else {
+                    await addDoc(collection(db, 'names'), { name: 'Acá presente ' + country });
                 }
 
                 updateResults();
@@ -144,6 +170,16 @@
                         resultsList.innerHTML += `<li>Hola ${name}!</li>`;
                     });
                 });
+            }
+
+            // Función para actualizar el saludo
+            function updateGreeting() {
+                const nameInput = document.getElementById('voter-name').value;
+                if (nameInput.trim() !== '') {
+                    document.getElementById('greeting').innerText = `¡Hola ${nameInput}! Gracias por votar.`;
+                } else {
+                    document.getElementById('greeting').innerText = `¡Hola! Acá presente de tu país, por favor ingresa tu nombre.`;
+                }
             }
 
             // Agregar evento a los botones
